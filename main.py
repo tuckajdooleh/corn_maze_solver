@@ -1,4 +1,5 @@
 import cv2
+from collections import deque
 #import numpy as np
 #from numpy import array, arange, uint8 
 #from matplotlib import pyplot as plt
@@ -13,6 +14,8 @@ endPoint = []
 middlePoints = []
 
 adjList = {}#given a coordinate, return the list of all it's neighbors
+
+
 
 
 # function to display the coordinates of
@@ -108,6 +111,14 @@ def drawLine(points, img):
     for i in range(len(points)):
         img[points[i][1]][points[i][0]] = [0,0,255]
 
+
+class Point:
+  def __init__(self, x, y, parent):
+    self.x = x
+    self.y = y
+    self.parent = parent
+    self.key = str(x) + "," + str(y)
+
 def createAdjList():
     global h
     global w
@@ -119,27 +130,60 @@ def createAdjList():
     for y in range(0, h):
         for x in range(0, w):
             if(bw_img[y,x]>T):
-                key = x + "," + y
+                currentPoint = Point(x,y,None)
                 
-                adjList[key] = []
+                adjList[currentPoint.key] = []
 
                 if x-1>0 and bw_img[y, x-1]>T:
-                    adjList[key].append((x-1,y))
+                    adjList[currentPoint.key].append(Point(x-1,y,None))
                 if y-1>0 and bw_img[y-1, x]>T:
-                    adjList[key].append((x,y-1))
+                    adjList[currentPoint.key].append(Point(x,y-1,None))
                 if x+1<w and bw_img[y, x+1]>T:
-                    adjList[key].append((x+1,y))
+                    adjList[currentPoint.key].append(Point(x+1,y,None))
                 if y+1<h and bw_img[y+1, x]>T: 
-                    adjList[key].append((x,y+1))
+                    adjList[currentPoint.key].append(Point(x,y+1,None))
     
-    
+
+
 def BFS(start, end):
     global h
     global w
     global adjList
     global bw_img
 
-    
+    q = deque()
+    visited = {}
+
+    q.append(start)
+
+    visited[start.key] = True
+
+    while len(q)>0:
+        #pop the Point off, check all of the neighbors to see if they're the target
+        #if none are, add all neighbors as Points to the q with the parent as the current popped off node
+        #how to prevent backtracking
+        #maybe have a visited list, everytime we add something to the q, add it to the visited list so no node will explore that as a neighbor
+        currentPoint = q.popleft()
+
+        neighbors = adjList[currentPoint.key]
+
+        for neighbor in neighbors:
+            if neighbor.key not in visited:
+                if neighbor.key == end.key:
+                    neighbor.parent = currentPoint
+                    return neighbor    
+                neighbor.parent = currentPoint
+                visited[neighbor.key] = True
+                q.append(neighbor)
+    return None
+
+def createPathFromEndNode(node):
+    currentNode = node
+    path = []
+    while currentNode.parent is not None:
+        path.append((currentNode.x,currentNode.y))
+        currentNode = currentNode.parent
+    return path
     
 def main():
     global startPoint
@@ -160,8 +204,8 @@ def main():
         middlePoints.append(points[i+1])
     
     createAdjList()
-    path = BFS(startPoint,endPoint)
-
+    node = BFS(Point(startPoint[0],startPoint[1],None),Point(endPoint[0],endPoint[1],None))
+    path = createPathFromEndNode(node)
     drawLine(path,img)
 
     cv2.imshow("Binary", img)
