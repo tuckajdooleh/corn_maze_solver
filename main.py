@@ -1,5 +1,7 @@
 import cv2
 from collections import deque
+import random
+import sys
 #import numpy as np
 #from numpy import array, arange, uint8 
 #from matplotlib import pyplot as plt
@@ -12,6 +14,8 @@ points = []
 startPoint = []
 endPoint = []
 middlePoints = []
+
+allPossiblePaths = {}
 
 adjList = {}#given a coordinate, return the list of all it's neighbors
 
@@ -107,13 +111,19 @@ def decreasePathSize():
                 bw_img[y, x] = 0
             if y+1<h and tempImg[y+1, x]<T: 
                 bw_img[y, x] = 0
-def drawLine(points, img):
+def drawLine(points, img,color):
     for i in range(len(points)):
         #img[points[i][1]][points[i][0]] = [0,0,255]
         x = points[i][0]
         y = points[i][1]
-        cv2.circle(img,(x,y),2,(0,0,255),-1)
+        cv2.circle(img,(x,y),2,color,-1)
 
+
+def randColor():
+    r = random.randrange(0, 255, 1)
+    b = random.randrange(0, 255, 1)
+    g = random.randrange(0, 255, 1)
+    return (r,b,g)
 
 class Point:
   def __init__(self, x, y, parent):
@@ -187,6 +197,68 @@ def createPathFromEndNode(node):
         path.append((currentNode.x,currentNode.y))
         currentNode = currentNode.parent
     return path
+
+def shortestPath(start, end):
+    result = {'path':[] , 'length':0}
+
+    createAdjList()
+    node = BFS(Point(start[0],start[1],None),Point(end[0],end[1],None))
+    path = createPathFromEndNode(node)
+    
+    result['path'] = path
+    result['length'] = len(path)
+
+    return result
+
+def createAllPossiblePaths(middle,start,end):
+    global allPossiblePaths
+
+    for point in middle:#from start to all middle points
+        fromKey = str(start[0]) + "," + str(start[1])
+        toKey = str(point[0]) + "," + str(point[1])
+        curPath = shortestPath(start,point)
+
+        allPossiblePaths[fromKey+"-"+toKey] = curPath
+        allPossiblePaths[toKey+"-"+fromKey] = curPath
+
+        
+
+    for point in middle:#from all points to the end point
+        fromKey = str(point[0]) + "," + str(point[1])
+        toKey = str(end[0]) + "," + str(end[1])
+        curPath = shortestPath(point,end)
+
+        allPossiblePaths[fromKey+"-"+toKey] = curPath
+        allPossiblePaths[toKey+"-"+fromKey] = curPath
+
+        
+
+    for point in middle:#all middle points to all middle points
+        for point2 in middle:
+            if point is not point2:
+                fromKey = str(point[0]) + "," + str(point[1])
+                toKey = str(point2[0]) + "," + str(point2[1])
+                
+                if fromKey+"-"+toKey not in allPossiblePaths and toKey+"-"+fromKey not in allPossiblePaths:
+                    
+                    curPath = shortestPath(point,point2)
+
+                    allPossiblePaths[fromKey+"-"+toKey] = curPath
+                    allPossiblePaths[toKey+"-"+fromKey] = curPath
+
+                    
+
+
+def travelingSalesmanBruteForce(middlePoints,startPoint,endPoint):
+    #all possible paths from start to finish, visiting all middle points
+    #might not actually take that long :(?
+    global allPossiblePaths
+    
+
+
+
+    pass
+
     
 def main():
     global startPoint
@@ -195,21 +267,22 @@ def main():
     global middlePoints
     global img
     loadIMG()
-    decreasePathSize()
+    #decreasePathSize()
     cv2.imshow("Binary", bw_img)
     cv2.setMouseCallback('Binary', click_event)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    startPoint = points[0];
-    endPoint = points[-1];
+    startPoint = points[0]
+    endPoint = points[-1]
 
     for i in range(len(points)-2):
         middlePoints.append(points[i+1])
-    
-    createAdjList()
-    node = BFS(Point(startPoint[0],startPoint[1],None),Point(endPoint[0],endPoint[1],None))
-    path = createPathFromEndNode(node)
-    drawLine(path,img)
+
+    createAllPossiblePaths(middlePoints,startPoint,endPoint)
+
+    path = travelingSalesmanBruteForce(middlePoints,startPoint,endPoint)
+
+    drawLine(path['path'],img,randColor())
 
     cv2.imshow("Binary", img)
     cv2.waitKey(0)
