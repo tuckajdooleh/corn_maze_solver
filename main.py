@@ -109,7 +109,10 @@ def decreasePathSize():
                 bw_img[y, x] = 0
 def drawLine(points, img):
     for i in range(len(points)):
-        img[points[i][1]][points[i][0]] = [0,0,255]
+        #img[points[i][1]][points[i][0]] = [0,0,255]
+        x = points[i][0]
+        y = points[i][1]
+        cv2.circle(img,(x,y),2,(0,0,255),-1)
 
 
 class Point:
@@ -133,7 +136,7 @@ def createAdjList():
                 currentPoint = Point(x,y,None)
                 
                 adjList[currentPoint.key] = []
-
+                
                 if x-1>0 and bw_img[y, x-1]>T:
                     adjList[currentPoint.key].append(Point(x-1,y,None))
                 if y-1>0 and bw_img[y-1, x]>T:
