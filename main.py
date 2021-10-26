@@ -249,15 +249,30 @@ def createAllPossiblePaths(middle,start,end):
                     
 
 
-def travelingSalesmanBruteForce(middlePoints,startPoint,endPoint):
+def travelingSalesmanBruteForce(middle, index, currentPath,start,end,minLength):#backtracking to generate all permutations of middle points
     #all possible paths from start to finish, visiting all middle points
     #might not actually take that long :(?
+
+    #consider all paths from start - all middle
+    #currentPath starts with start in it
+    #currentPath also has a length val
+
     global allPossiblePaths
     
+    for i in range(middle):
+        if middle[i] not in currentPath['path']:
+            curPoint = middle[i]
+            prevPoint = middle[i-1]
+            currentPath['path'].push(curPoint)
+            currentPath['length'].+=allPossiblePaths[prevPoint+","+curPoint]
+            travelingSalesmanBruteForce(middle, index, currentPath,start,end,minLength)
+            currentPath['path'].pop()
 
 
 
-    pass
+
+
+    
 
     
 def main():
