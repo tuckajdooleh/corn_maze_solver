@@ -116,8 +116,8 @@ def decreasePathSize():
 def drawLine(points, img,color):
     for i in range(len(points)):
         #img[points[i][1]][points[i][0]] = [0,0,255]
-        x = points[i].x
-        y = points[i].y
+        x = points[i][0]
+        y = points[i][1]
         cv2.circle(img,(x,y),2,color,-1)
 
 
@@ -248,10 +248,14 @@ def createAllPossiblePaths(middle,start,end):
                     allPossiblePaths[fromKey+"-"+toKey] = curPath
                     allPossiblePaths[toKey+"-"+fromKey] = curPath
 
-                    
 
+def copyArray(points):          
+    result = []
 
-def travelingSalesmanBruteForce(middle, index, currentPath,start,end):#backtracking to generate all permutations of middle points
+    for point in points:
+        result.append(Point(point.x,point.y,None))
+    return result
+def travelingSalesmanBruteForce(middle, index, currentPath,start,end,visited):#backtracking to generate all permutations of middle points
     #all possible paths from start to finish, visiting all middle points
     #might not actually take that long :(?
 
@@ -263,28 +267,42 @@ def travelingSalesmanBruteForce(middle, index, currentPath,start,end):#backtrack
     global minimumPathLength
     global minimumPath
 
-    if index >= len(currentPath):
+    if index >= len(middle):
+        for point in currentPath['path']:
+            print("tsm")
+            print(str(point.x)+","+str(point.y))
         if currentPath['length'] < minimumPathLength:
             minimumPathLength = currentPath['length']
-            minimumPath = np.copy(currentPath)
+            minimumPath = copyArray(currentPath['path'])
             #skip looping since can't add anymore nodes to path
     else:
         for i in range(len(middle)):
-            if middle[i] not in currentPath['path']:
-                #create a point val for the currently observed point, and the last point in the constructed path
-                curPoint = Point(middle[i][0],middle[i][1],None)
+            #create a point val for the currently observed point, and the last point in the constructed path
+            curPoint = Point(middle[i][0],middle[i][1],None)
+            if curPoint.key not in visited:
+                visited[curPoint.key] = True
                 prevPoint = Point(middle[i-1][0],middle[i-1][1],None)
                 #add currently observed point to the constructed path
                 currentPath['path'].append(curPoint)
                 #total length of the constructed path is the previous path + the path from the last node to current node
                 currentPath['length']+=allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
                 
-                travelingSalesmanBruteForce(middle, index + 1, currentPath,start,end)
+                travelingSalesmanBruteForce(middle, index + 1, currentPath,start,end,visited)
+
+                del visited[curPoint.key]
+
                 #revert the length, and pop off the node
                 currentPath['length']-=allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
                 currentPath['path'].pop()
 
-
+def drawResultPath(result):
+    global allPossiblePaths
+    global img
+    lastPoint = result[0]
+    for i in range(len(result)-1):
+        curPoint = result[i+1]
+        drawLine(allPossiblePaths[lastPoint.key+"-"+curPoint.key]['path'], img, randColor())
+        lastPoint = curPoint
 
 def main():
     global startPoint
@@ -309,11 +327,15 @@ def main():
     temp =  {'path':[],'length':0}
     temp['path'].append(Point(startPoint[0],startPoint[1],None))
 
-    travelingSalesmanBruteForce(middlePoints, 0,temp,startPoint,endPoint)
+    visited = {}
 
-    print(minimumPath)
+    travelingSalesmanBruteForce(middlePoints, 0,temp,startPoint,endPoint,visited)
 
-    drawLine(minimumPath['path'],img,randColor())
+    for point in minimumPath:
+        print(str(point.x) + "," + str(point.y))
+
+    drawResultPath(minimumPath)
+    #drawLine(minimumPath,img,randColor())
 
     cv2.imshow("Binary", img)
     cv2.waitKey(0)
