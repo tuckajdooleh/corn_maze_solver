@@ -209,6 +209,7 @@ def shortestPath(start, end):
     
     result['path'] = path
     result['length'] = len(path)
+    #print("testing shortestpath:" + str(result['length']))
 
     return result
 
@@ -268,8 +269,9 @@ def travelingSalesmanBruteForce(middle, index, currentPath,start,end,visited):#b
     global minimumPath
 
     if index >= len(middle):
+        print("tsm")
+        print("len:" + str(currentPath['length']))
         for point in currentPath['path']:
-            print("tsm")
             print(str(point.x)+","+str(point.y))
         if currentPath['length'] < minimumPathLength:
             minimumPathLength = currentPath['length']
@@ -285,14 +287,19 @@ def travelingSalesmanBruteForce(middle, index, currentPath,start,end,visited):#b
                 #add currently observed point to the constructed path
                 currentPath['path'].append(curPoint)
                 #total length of the constructed path is the previous path + the path from the last node to current node
-                currentPath['length']+=allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
+
+                curPathLength = allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
+
+                currentPath['length']+=curPathLength
+
+                print("len:"+str(curPathLength))
                 
                 travelingSalesmanBruteForce(middle, index + 1, currentPath,start,end,visited)
 
                 del visited[curPoint.key]
 
                 #revert the length, and pop off the node
-                currentPath['length']-=allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
+                currentPath['length']-=curPathLength
                 currentPath['path'].pop()
 
 def drawResultPath(result):
@@ -330,7 +337,7 @@ def main():
     visited = {}
 
     travelingSalesmanBruteForce(middlePoints, 0,temp,startPoint,endPoint,visited)
-
+    print("MinLength:" + str(minimumPathLength))
     for point in minimumPath:
         print(str(point.x) + "," + str(point.y))
 
