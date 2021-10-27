@@ -224,7 +224,7 @@ def createAllPossiblePaths(middle,start,end):
         allPossiblePaths[fromKey+"-"+toKey] = curPath
         allPossiblePaths[toKey+"-"+fromKey] = curPath
 
-        
+        #print(curPath['length'])
 
     for point in middle:#from all points to the end point
         fromKey = str(point[0]) + "," + str(point[1])
@@ -234,7 +234,7 @@ def createAllPossiblePaths(middle,start,end):
         allPossiblePaths[fromKey+"-"+toKey] = curPath
         allPossiblePaths[toKey+"-"+fromKey] = curPath
 
-        
+        #print(curPath['length'])
 
     for point in middle:#all middle points to all middle points
         for point2 in middle:
@@ -248,6 +248,8 @@ def createAllPossiblePaths(middle,start,end):
 
                     allPossiblePaths[fromKey+"-"+toKey] = curPath
                     allPossiblePaths[toKey+"-"+fromKey] = curPath
+
+                    #print(curPath['length'])
 
 
 def copyArray(points):          
@@ -281,9 +283,10 @@ def travelingSalesmanBruteForce(middle, index, currentPath,start,end,visited):#b
         for i in range(len(middle)):
             #create a point val for the currently observed point, and the last point in the constructed path
             curPoint = Point(middle[i][0],middle[i][1],None)
+            prevPoint = currentPath['path'][index]
             if curPoint.key not in visited:
                 visited[curPoint.key] = True
-                prevPoint = Point(middle[i-1][0],middle[i-1][1],None)
+                
                 #add currently observed point to the constructed path
                 currentPath['path'].append(curPoint)
                 #total length of the constructed path is the previous path + the path from the last node to current node
@@ -292,7 +295,7 @@ def travelingSalesmanBruteForce(middle, index, currentPath,start,end,visited):#b
 
                 currentPath['length']+=curPathLength
 
-                print("len:"+str(curPathLength))
+                #print("len:"+str(curPathLength))
                 
                 travelingSalesmanBruteForce(middle, index + 1, currentPath,start,end,visited)
 
