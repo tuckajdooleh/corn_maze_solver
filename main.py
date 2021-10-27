@@ -2,6 +2,7 @@ import cv2
 from collections import deque
 import random
 import sys
+import numpy as np
 #import numpy as np
 #from numpy import array, arange, uint8 
 #from matplotlib import pyplot as plt
@@ -19,7 +20,8 @@ allPossiblePaths = {}
 
 adjList = {}#given a coordinate, return the list of all it's neighbors
 
-
+minimumPathLength = sys.maxsize
+minimumPath = []
 
 
 # function to display the coordinates of
@@ -114,8 +116,8 @@ def decreasePathSize():
 def drawLine(points, img,color):
     for i in range(len(points)):
         #img[points[i][1]][points[i][0]] = [0,0,255]
-        x = points[i][0]
-        y = points[i][1]
+        x = points[i].x
+        y = points[i].y
         cv2.circle(img,(x,y),2,color,-1)
 
 
@@ -249,7 +251,7 @@ def createAllPossiblePaths(middle,start,end):
                     
 
 
-def travelingSalesmanBruteForce(middle, index, currentPath,start,end,minLength):#backtracking to generate all permutations of middle points
+def travelingSalesmanBruteForce(middle, index, currentPath,start,end):#backtracking to generate all permutations of middle points
     #all possible paths from start to finish, visiting all middle points
     #might not actually take that long :(?
 
@@ -258,23 +260,32 @@ def travelingSalesmanBruteForce(middle, index, currentPath,start,end,minLength):
     #currentPath also has a length val
 
     global allPossiblePaths
-    
-    for i in range(middle):
-        if middle[i] not in currentPath['path']:
-            curPoint = middle[i]
-            prevPoint = middle[i-1]
-            currentPath['path'].push(curPoint)
-            currentPath['length'].+=allPossiblePaths[prevPoint+","+curPoint]
-            travelingSalesmanBruteForce(middle, index, currentPath,start,end,minLength)
-            currentPath['path'].pop()
+    global minimumPathLength
+    global minimumPath
+
+    if index >= len(currentPath):
+        if currentPath['length'] < minimumPathLength:
+            minimumPathLength = currentPath['length']
+            minimumPath = np.copy(currentPath)
+            #skip looping since can't add anymore nodes to path
+    else:
+        for i in range(len(middle)):
+            if middle[i] not in currentPath['path']:
+                #create a point val for the currently observed point, and the last point in the constructed path
+                curPoint = Point(middle[i][0],middle[i][1],None)
+                prevPoint = Point(middle[i-1][0],middle[i-1][1],None)
+                #add currently observed point to the constructed path
+                currentPath['path'].append(curPoint)
+                #total length of the constructed path is the previous path + the path from the last node to current node
+                currentPath['length']+=allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
+                
+                travelingSalesmanBruteForce(middle, index + 1, currentPath,start,end)
+                #revert the length, and pop off the node
+                currentPath['length']-=allPossiblePaths[prevPoint.key+"-"+curPoint.key]['length']
+                currentPath['path'].pop()
 
 
 
-
-
-    
-
-    
 def main():
     global startPoint
     global endPoint
@@ -295,9 +306,14 @@ def main():
 
     createAllPossiblePaths(middlePoints,startPoint,endPoint)
 
-    path = travelingSalesmanBruteForce(middlePoints,startPoint,endPoint)
+    temp =  {'path':[],'length':0}
+    temp['path'].append(Point(startPoint[0],startPoint[1],None))
 
-    drawLine(path['path'],img,randColor())
+    travelingSalesmanBruteForce(middlePoints, 0,temp,startPoint,endPoint)
+
+    print(minimumPath)
+
+    drawLine(minimumPath['path'],img,randColor())
 
     cv2.imshow("Binary", img)
     cv2.waitKey(0)
