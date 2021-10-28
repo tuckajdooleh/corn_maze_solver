@@ -43,6 +43,7 @@ class Image:
         self.h = self.bw_img.shape[0]
         self.w = self.bw_img.shape[1]
 
+    def imageInput(self):
         cv2.imshow("Binary", self.bw_img)
         cv2.setMouseCallback('Binary', self.click_event)
         cv2.waitKey(0)
@@ -57,20 +58,20 @@ class Image:
         
         tempImg = self.bw_img.copy()
 
-        self.h = bw_img.shape[0]
-        self.w = bw_img.shape[1]
+        self.h = self.bw_img.shape[0]
+        self.w = self.bw_img.shape[1]
 
         T = 200
         
-        for y in range(0, h):
-            for x in range(0, w):
+        for y in range(0, self.h):
+            for x in range(0, self.w):
                 if x-1>0 and tempImg[y, x-1]<T:
                     self.bw_img[y, x] = 0
                 if y-1>0 and tempImg[y-1, x]<T:
                     self.bw_img[y, x] = 0
-                if x+1<w and tempImg[y, x+1]<T:
+                if x+1<self.w and tempImg[y, x+1]<T:
                     self.bw_img[y, x] = 0
-                if y+1<h and tempImg[y+1, x]<T: 
+                if y+1<self.h and tempImg[y+1, x]<T: 
                     self.bw_img[y, x] = 0
     def drawLine(self,points, img,color):
         for i in range(len(points)):
