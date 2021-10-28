@@ -12,6 +12,7 @@ class Image:
         self.startPoint = None
         self.endPoint = None
         self.middlePoints = []
+        self.animationimage = None
 
     def click_event(self,event, x, y, flags, params):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -21,7 +22,7 @@ class Image:
                         1, (255, 0, 0), 2)
                         '''
             cv2.circle(self.img,(x,y),5,(255,0,0),-1)
-            cv2.imshow('image', self.img)
+            cv2.imshow('image2', self.img)
             self.selectedPoints.append((x,y))
         if event==cv2.EVENT_RBUTTONDOWN:
             font = cv2.FONT_HERSHEY_SIMPLEX
@@ -32,11 +33,13 @@ class Image:
                         str(g) + ',' + str(r),
                         (x,y), font, 1,
                         (255, 255, 0), 2)
-            cv2.imshow('image', self.img)
-
+            cv2.imshow('image2', self.img)
+    def addCircle(self,img,x,y,r,color):
+        cv2.circle(img,(x,y),r,color,-1)
 
     def loadIMG(self):
         self.img = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
+        self.resetAnimationImage()
         gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
         ret, self.bw_img = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
         bw = cv2.threshold(self.img, 127, 255, cv2.THRESH_BINARY)
@@ -86,8 +89,15 @@ class Image:
         return (r,b,g)
 
     def showImage(self):
-        cv2.imshow("Binary", self.img)
+        cv2.imshow("image2", self.img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+    def showImageNoWait(self):
+        cv2.imshow("image", self.animationimage)
+        cv2.waitKey(1)       
+    def endImageShow(self):
+        cv2.destroyAllWindows()
+    def resetAnimationImage(self):
+        self.animationimage = self.img.copy()
 
 

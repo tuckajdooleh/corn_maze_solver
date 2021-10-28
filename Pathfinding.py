@@ -1,6 +1,7 @@
 from Point import *
 from collections import deque
 import sys
+import time
 
 class Pathfinding:
     def __init__(self,image):
@@ -38,6 +39,16 @@ class Pathfinding:
 
 
     def BFS(self,start, end):
+        self.image.resetAnimationImage()
+
+        self.image.addCircle(self.image.animationimage,start.x,start.y,5,(255,0,0))
+        self.image.addCircle(self.image.animationimage,end.x,end.y,5,(0,255,0))
+
+        self.image.showImageNoWait()
+
+
+        drawFrequency = 45
+        
         q = deque()
         visited = {}
 
@@ -47,13 +58,20 @@ class Pathfinding:
 
         while len(q)>0:
             currentPoint = q.popleft()
-
+            self.image.addCircle(self.image.animationimage,currentPoint.x,currentPoint.y,1,(0,0,255))
+            
+            drawFrequency-=1
+            if drawFrequency == 0:
+                self.image.showImageNoWait()
+                drawFrequency=45
+            
             neighbors = self.adjList[currentPoint.key]
 
             for neighbor in neighbors:
                 if neighbor.key not in visited:
                     if neighbor.key == end.key:
                         neighbor.parent = currentPoint
+                        
                         return neighbor    
                     neighbor.parent = currentPoint
                     visited[neighbor.key] = True
@@ -66,6 +84,9 @@ class Pathfinding:
         while currentNode.parent is not None:
             path.append((currentNode.x,currentNode.y))
             currentNode = currentNode.parent
+            self.image.addCircle(self.image.animationimage,currentNode.x,currentNode.y,3,(0,255,0))
+            self.image.showImageNoWait()
+        self.image.endImageShow()
         return path
 
     def shortestPath(self,start, end):
