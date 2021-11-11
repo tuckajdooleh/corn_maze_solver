@@ -2,6 +2,7 @@ from Point import *
 from collections import deque
 import sys
 import time
+from queue import PriorityQueue
 
 class Pathfinding:
     def __init__(self,image):
@@ -35,7 +36,42 @@ class Pathfinding:
                         self.adjList[currentPoint.key].append(Point(x+1,y,None))
                     if y+1<h and self.image.bw_img[y+1, x]>T: 
                         self.adjList[currentPoint.key].append(Point(x,y+1,None))
-        
+
+
+    def distance(self, start,end):
+        dist = (end.y-start.y)/(end.x-start.x)
+        return abs(dist)
+
+    def aStar(self,start, end):
+        q = PriorityQueue()
+
+        start.g = 0
+
+        start.h = self.distance(start,end)
+
+        start.f = start.g + start.h
+
+        q.put((start.f,start))
+
+        while not q.empty():
+            currentPoint = q.get()
+            if currentPoint[1].key == end.key:
+                    return currentPoint[1]
+            neighbors = self.adjList[currentPoint[1].key]
+
+            for neighbor in neighbors:
+
+                
+
+                neighbor.g = currentPoint[1].g + 1
+                neighbor.h = self.distance(neighbor,end)
+                neighbor.f = neighbor.g+neighbor.h
+
+                neighbor.parent = currentPoint[1]
+
+                q.put((neighbor.f,neighbor))
+
+        return None
 
 
     def BFS(self,start, end):
@@ -92,7 +128,7 @@ class Pathfinding:
     def shortestPath(self,start, end):
         result = {'path':[] , 'length':0}
         self.createAdjList()
-        node = self.BFS(Point(start[0],start[1],None),Point(end[0],end[1],None))
+        node = self.aStar(Point(start[0],start[1],None),Point(end[0],end[1],None))
         path = self.createPathFromEndNode(node)
         result['path'] = path
         result['length'] = len(path)
