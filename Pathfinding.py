@@ -161,9 +161,11 @@ class Pathfinding:
         while currentNode.parent is not None:
             path.append((currentNode.x,currentNode.y))
             currentNode = currentNode.parent
-            self.image.addCircle(self.image.animationimage,currentNode.x,currentNode.y,3,(0,255,0))
-            self.image.showImageNoWait()
-        self.image.endImageShow()
+            if self.visuals:
+                self.image.addCircle(self.image.animationimage,currentNode.x,currentNode.y,3,(0,255,0))
+                self.image.showImageNoWait()
+        if self.visuals:
+            self.image.endImageShow()
         return path
 
     def shortestPath(self,start, end):
