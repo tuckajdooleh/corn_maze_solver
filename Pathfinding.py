@@ -1,7 +1,7 @@
 from Point import *
 from collections import deque
 import sys
-import time
+import math
 from queue import PriorityQueue
 
 class Pathfinding:
@@ -39,11 +39,27 @@ class Pathfinding:
 
 
     def distance(self, start,end):
-        dist = (end.y-start.y)/(end.x-start.x)
-        return abs(dist)
+        dist = (end.y-start.y)**2+(end.x-start.x)**2
+        return math.sqrt(dist)
 
     def aStar(self,start, end):
+
+
+        self.image.resetAnimationImage()
+
+        self.image.addCircle(self.image.animationimage,start.x,start.y,5,(255,0,0))
+        self.image.addCircle(self.image.animationimage,end.x,end.y,5,(0,255,0))
+
+        self.image.showImageNoWait()
+
+
+        drawFrequency = 45
+
+
+
         q = PriorityQueue()
+
+        visited = {}
 
         start.g = 0
 
@@ -51,25 +67,38 @@ class Pathfinding:
 
         start.f = start.g + start.h
 
-        q.put((start.f,start))
+        q.put(start)
+
+        visited[start.key] = True
 
         while not q.empty():
             currentPoint = q.get()
-            if currentPoint[1].key == end.key:
-                    return currentPoint[1]
-            neighbors = self.adjList[currentPoint[1].key]
+
+            self.image.addCircle(self.image.animationimage,currentPoint.x,currentPoint.y,1,(0,0,255))
+            
+            drawFrequency-=1
+            if drawFrequency == 0:
+                self.image.showImageNoWait()
+                drawFrequency=45
+
+            neighbors = self.adjList[currentPoint.key]
 
             for neighbor in neighbors:
 
-                
+                if(neighbor.key not in visited):
 
-                neighbor.g = currentPoint[1].g + 1
-                neighbor.h = self.distance(neighbor,end)
-                neighbor.f = neighbor.g+neighbor.h
+                    if neighbor.key == end.key:
+                        neighbor.parent = currentPoint
+                        return neighbor
 
-                neighbor.parent = currentPoint[1]
+                    neighbor.g = currentPoint.g + 1
+                    neighbor.h = self.distance(neighbor,end)
+                    neighbor.f = neighbor.g+neighbor.h
 
-                q.put((neighbor.f,neighbor))
+                    neighbor.parent = currentPoint
+
+                    q.put(neighbor)
+                    visited[neighbor.key] = True
 
         return None
 
