@@ -5,7 +5,7 @@ import math
 from queue import PriorityQueue
 
 class Pathfinding:
-    def __init__(self,image):
+    def __init__(self,image,visuals):
         self.points = []
         self.startPoint = []
         self.endPoint = []
@@ -15,6 +15,7 @@ class Pathfinding:
         self.minimumPathLength = sys.maxsize
         self.minimumPath = []
         self.image = image
+        self.visuals = visuals
 
     def createAdjList(self):
         T = 200
@@ -38,19 +39,29 @@ class Pathfinding:
                         self.adjList[currentPoint.key].append(Point(x,y+1,None))
 
 
+                    if x-1>0 and y-1>0 and self.image.bw_img[y-1, x-1]>T:
+                        self.adjList[currentPoint.key].append(Point(x-1,y-1,None))
+                    if x+1<w and y+1<h and self.image.bw_img[y+1, x+1]>T:
+                        self.adjList[currentPoint.key].append(Point(x+1,y+1,None))
+                    if x+1<w and y-1>0 and self.image.bw_img[y-1, x+1]>T:
+                        self.adjList[currentPoint.key].append(Point(x+1,y-1,None))
+                    if x-1>0 and y+1<h and self.image.bw_img[y+1, x-1]>T:
+                        self.adjList[currentPoint.key].append(Point(x-1,y+1,None))
+
+
     def distance(self, start,end):
         dist = (end.y-start.y)**2+(end.x-start.x)**2
         return math.sqrt(dist)
 
     def aStar(self,start, end):
 
+        if self.visuals:
+            self.image.resetAnimationImage()
 
-        self.image.resetAnimationImage()
+            self.image.addCircle(self.image.animationimage,start.x,start.y,5,(255,0,0))
+            self.image.addCircle(self.image.animationimage,end.x,end.y,5,(0,255,0))
 
-        self.image.addCircle(self.image.animationimage,start.x,start.y,5,(255,0,0))
-        self.image.addCircle(self.image.animationimage,end.x,end.y,5,(0,255,0))
-
-        self.image.showImageNoWait()
+            self.image.showImageNoWait()
 
 
         drawFrequency = 45
@@ -73,13 +84,14 @@ class Pathfinding:
 
         while not q.empty():
             currentPoint = q.get()
-
-            self.image.addCircle(self.image.animationimage,currentPoint.x,currentPoint.y,1,(0,0,255))
             
-            drawFrequency-=1
-            if drawFrequency == 0:
-                self.image.showImageNoWait()
-                drawFrequency=45
+            if self.visuals:
+                self.image.addCircle(self.image.animationimage,currentPoint.x,currentPoint.y,1,(0,0,255))
+                
+                drawFrequency-=1
+                if drawFrequency == 0:
+                    self.image.showImageNoWait()
+                    drawFrequency=45
 
             neighbors = self.adjList[currentPoint.key]
 
@@ -157,6 +169,7 @@ class Pathfinding:
     def shortestPath(self,start, end):
         result = {'path':[] , 'length':0}
         self.createAdjList()
+        #node = self.BFS(Point(start[0],start[1],None),Point(end[0],end[1],None))
         node = self.aStar(Point(start[0],start[1],None),Point(end[0],end[1],None))
         path = self.createPathFromEndNode(node)
         result['path'] = path
