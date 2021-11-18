@@ -96,7 +96,9 @@ class Pathfinding:
             neighbors = self.adjList[currentPoint.key]
 
             for neighbor in neighbors:
-
+                tentativeGCost = currentPoint.g + 1
+                if(neighbor.key in visited and tentativeGCost < neighbor.g):
+                    del visited[neighbor.key]
                 if(neighbor.key not in visited):
 
                     if neighbor.key == end.key:

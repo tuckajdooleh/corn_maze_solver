@@ -5,7 +5,7 @@ from Point import *
 def main():
 
     image = Image("maze.jpg")
-    pathfinding = Pathfinding(image,False)
+    pathfinding = Pathfinding(image,True)
     image.loadIMG()
     image.decreasePathSize()
     image.imageInput()
